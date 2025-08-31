@@ -36,6 +36,21 @@ def run_smoke_epoch(cfg: dict):
     else:
         cams = open_cams_zarr(cfg["cams_zarr"])
 
+    # Generate timesteps BEFORE using them
+    ts = list(
+        times_6h(
+            cfg["times"]["start"], cfg["times"]["stop"], cfg["times"]["step_hours"]
+        )
+    )
+
+    # NOW initialize model with first timestep
+    key = jax.random.PRNGKey(cfg["train"]["seed"])
+    model = ACUNet(base=32, levels=3)
+    pm_t, gc_t6, y, meta = build_example_at_time(cams, cfg, ts[0])
+    params = model.init(key, jnp.array(pm_t), jnp.array(gc_t6))["params"]
+    tx = optax.adamw(cfg["train"]["lr"], weight_decay=1e-4)
+    opt_state = tx.init(params)
+
     # model/opt
     key = jax.random.PRNGKey(cfg["train"]["seed"])
     model = ACUNet(base=32, levels=3)
