@@ -1,4 +1,7 @@
+# mjolnur/models/sidecar.py
+from __future__ import annotations
 import flax.linen as nn, jax.numpy as jnp
+import jax
 from .advection import advect_pm
 
 
@@ -25,18 +28,16 @@ class Block(nn.Module):
 
 
 class ACUNet(nn.Module):
-    base: int = 64
+    base: int = 32
     levels: int = 3
 
     @nn.compact
-    def __call__(self, pm_t, gc_fields_t6):
-        # pm_t: [B,H,W,2]; gc_fields_t6: [B,H,W,F] (decoded @t+6 including u10/v10)
-        # 1) advect baseline using first two decoded channels u10/v10
-        u10, v10 = gc_fields_t6[..., [0]], gc_fields_t6[..., [1]]
-        adv = advect_pm(pm_t, u10.squeeze(-1), v10.squeeze(-1), 6.0)
-        x = jnp.concatenate([pm_t, adv, gc_fields_t6], axis=-1)
+    def __call__(self, pm_t, gc_t6):
+        # pm_t: (B,H,W,2); gc_t6: (B,H,W,F) where first 2 are u10,v10
+        u10, v10 = gc_t6[..., 0], gc_t6[..., 1]
+        adv = advect_pm(pm_t, u10, v10, 6.0)  # (B,H,W,2)
+        x = jnp.concatenate([pm_t, adv, gc_t6], axis=-1)
 
-        # 2) small UNet
         skips = []
         h = Conv(self.base)(x)
         for i in range(self.levels):
@@ -44,7 +45,11 @@ class ACUNet(nn.Module):
             skips.append(h)
             h = nn.avg_pool(h, (2, 2), (2, 2))
         for i in reversed(range(self.levels)):
-            h = nn.upsample(h, scale=(2, 2), method="nearest")
+            h = jax.image.resize(
+                h,
+                (h.shape[0], skips[i].shape[1], skips[i].shape[2], h.shape[3]),
+                method="nearest",
+            )
             h = jnp.concatenate([h, skips[i]], axis=-1)
             h = Block(self.base * (2**i))(h)
         delta = nn.Conv(2, (1, 1))(h)
