@@ -26,12 +26,15 @@ def rmse(a, b, w=None):
 
 def run_smoke_epoch(cfg: dict):
     # data
-    cams = open_cams_zarr(cfg["cams_zarr"])
-    ts = list(
-        times_6h(
+    if cfg["cams_zarr"] == "mock":
+        from mjolnur.data.cams import create_mock_cams_dataset
+
+        cams = create_mock_cams_dataset(
             cfg["times"]["start"], cfg["times"]["stop"], cfg["times"]["step_hours"]
         )
-    )
+        print("Using mock CAMS data for testing")
+    else:
+        cams = open_cams_zarr(cfg["cams_zarr"])
 
     # model/opt
     key = jax.random.PRNGKey(cfg["train"]["seed"])

@@ -1,27 +1,25 @@
 # mjolnur/config/exp1_decoded.yaml
-cams_zarr: "gs://mjolnur-cams-data/cams/zarr/cams_eac4_pm_1deg.zarr"
-
-# either use a decoded-cache (fast)...
-gc_decoded_zarr: "gs://mjolnur-cams-data/graphcast/decoded_1deg.zarr"
-# ...or leave blank and implement on-the-fly below
-use_decoded_cache: true
-
+cams_zarr: "gs://mjolnur-cams-data/cams/zarr/pm_1deg_conservative.zarr"
+use_decoded_cache: false
 gc_channels:
-  - 10m_u_component_of_wind
-  - 10m_v_component_of_wind
-  - 2m_temperature
-  - mean_sea_level_pressure
-  - total_precipitation_6hr
+  - "10m_u_component_of_wind"
+  - "10m_v_component_of_wind"
+  - "2m_temperature"
+  - "mean_sea_level_pressure"
+  - "total_precipitation_6hr"
 
 times:
-  start: "2014-01-01T00:00:00"
-  stop:  "2014-01-03T18:00:00"   # short window for smoke test
+  start: "2024-01-01T00:00:00"
+  stop: "2024-01-07T00:00:00"
   step_hours: 6
 
 train:
-  batch_mode: "global"           # "global" | "patch"
-  patch_size: 128
-  steps: 30
-  lr: 2.0e-4
-  seed: 0
-  log_every: 1
+  seed: 42
+  lr: 5e-4
+  steps: 1000
+  log_every: 10
+  weight_decay: 1e-4
+  
+model:
+  base: 32
+  levels: 3
