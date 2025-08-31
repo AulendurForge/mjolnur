@@ -24,12 +24,7 @@ def rmse(a, b, w=None):
     return jnp.sqrt(jnp.mean(e))
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--config", required=True)
-    args = ap.parse_args()
-    cfg = yaml.safe_load(open(args.config))
-
+def run_smoke_epoch(cfg: dict):
     # data
     cams = open_cams_zarr(cfg["cams_zarr"])
     ts = list(
@@ -68,10 +63,7 @@ def main():
     # loop
     for step_i, t0 in enumerate(ts[: cfg["train"]["steps"]], start=1):
         pm_t, gc_t6, y, meta = build_example_at_time(cams, cfg, t0)
-        pm_t = jnp.array(pm_t)
-        gc_t6 = jnp.array(gc_t6)
-        y = jnp.array(y)
-
+        pm_t, gc_t6, y = jnp.array(pm_t), jnp.array(gc_t6), jnp.array(y)
         params, opt_state, loss, logs, yhat = train_step(
             params, opt_state, (pm_t, gc_t6, y)
         )
@@ -89,6 +81,15 @@ def main():
                 f"[{step_i:03d}] t0={meta['t0']}  loss={float(loss):.3f}  "
                 f"rmse(model)={rmse_model:.3f}  rmse(pers)={rmse_pers:.3f}  rmse(adv)={rmse_adv:.3f}"
             )
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--config", required=True, help="Path to YAML config")
+    args = ap.parse_args()
+    with open(args.config, "r") as f:
+        cfg = yaml.safe_load(f)
+    run_smoke_epoch(cfg)
 
 
 if __name__ == "__main__":

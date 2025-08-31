@@ -32,6 +32,8 @@ dev = ["pytest", "ruff", "black", "mypy"]
 cams-to-zarr = "mjolnur.scripts.cams_to_zarr:main"
 run-smoke-epoch = "mjolnur.training.run_smoke_epoch:main"
 
+[tool.setuptools.package-data]
+"mjolnur" = ["config/*"]
 
 [tool.setuptools.packages.find]
 include = ["mjolnur*"]
