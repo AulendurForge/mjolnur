@@ -11,31 +11,38 @@ def open_cams_zarr(zarr_uri: str) -> xr.Dataset:
     return ds.sortby("time")
 
 
+# mjolnur/data/cams.py - update get_pm_slice
 def get_pm_slice(ds: xr.Dataset, when) -> xr.Dataset:
-    return ds[["pm2p5", "pm10"]].sel(
-        time=pd.Timestamp(when), method="nearest", tolerance="45min"
-    )
+    when_ts = pd.Timestamp(when)
+
+    # Check if exact time exists
+    if when_ts in ds.time.values:
+        return ds[["pm2p5", "pm10"]].sel(time=when_ts)
+
+    # Otherwise use nearest with tolerance
+    return ds[["pm2p5", "pm10"]].sel(time=when_ts, method="nearest", tolerance="45min")
 
 
-# mjolnur/data/cams.py - add this function
+# mjolnur/data/cams.py - update create_mock_cams_dataset
 def create_mock_cams_dataset(start: str, stop: str, step_hours: int = 6) -> xr.Dataset:
     """Create mock CAMS PM data for testing"""
     import numpy as np
 
-    times = pd.date_range(start=start, end=stop, freq=f"{step_hours}h")
+    # Add padding for t+6h lookups
+    start_padded = pd.Timestamp(start) - pd.Timedelta(hours=12)
+    stop_padded = pd.Timestamp(stop) + pd.Timedelta(hours=12)
+
+    times = pd.date_range(start=start_padded, end=stop_padded, freq=f"{step_hours}h")
     lat = np.arange(-89.5, 90, 1)
     lon = np.arange(0.5, 360.5, 1)
 
     np.random.seed(42)
-    # Create realistic-ish PM values
     pm25 = np.random.lognormal(2.5, 1.0, (len(times), len(lat), len(lon))).astype(
         np.float32
     )
     pm10 = np.random.lognormal(3.0, 1.0, (len(times), len(lat), len(lon))).astype(
         np.float32
     )
-
-    # Ensure PM10 >= PM2.5
     pm10 = np.maximum(pm10, pm25 * 1.5)
 
     ds = xr.Dataset(
@@ -49,4 +56,9 @@ def create_mock_cams_dataset(start: str, stop: str, step_hours: int = 6) -> xr.D
             "lon": lon,
         },
     )
+
+    # Ensure time is sorted
+    ds = ds.sortby("time")
+
+    print(f"Created mock CAMS with {len(times)} timesteps: {times[0]} to {times[-1]}")
     return ds
