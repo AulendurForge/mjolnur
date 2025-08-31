@@ -11,14 +11,6 @@ Original file is located at
 ### Example of how to pull in ERA5 data and prep it for use in GraphCast
 """
 
-!pip install zarr
-!pip install xarray[complete]
-!pip install gcsfs
-
-!pip install dm-haiku jax jaxlib
-!pip install git+https://github.com/deepmind/graphcast.git
-!pip install jax[cuda] -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-!pip install matplotlib cartopy
 
 import xarray as xr
 import numpy as np
@@ -461,9 +453,6 @@ if __name__ == "__main__":
 
 """### Example of how to pull in CAMS Data"""
 
-!apt-get -qq install libproj-dev proj-data proj-bin libgeos-dev
-!pip install zarr xarray[complete]
-!pip install -q cartopy
 
 #!/usr/bin/env python3
 """
