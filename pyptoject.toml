@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mjolnur"
+version = "0.1.0"
+description = "MJOLNUR sidecar models and training for GraphCast-powered PM forecasting"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Aulendur LLC" }]
+license = { text = "Apache-2.0" }
+keywords = ["GraphCast", "air quality", "PM2.5", "PM10", "weather"]
+dependencies = [
+  "xarray",
+  "zarr>=2.16.0",
+  "gcsfs>=2023.9.0",
+  "netCDF4",
+  "numpy",
+  "pandas",
+  "matplotlib",
+  # light runtime deps for the sidecar
+  "flax>=0.7.0",
+  "optax>=0.2.2",
+]
+
+[project.optional-dependencies]
+regrid = ["xesmf>=0.8.5"]
+dev = ["pytest", "ruff", "black", "mypy"]
+
+[project.scripts]
+cams-to-zarr = "mjolnur.scripts.cams_to_zarr:main"
+run-smoke-epoch = "mjolnur.training.run_smoke_epoch:main"
+
+[tool.setuptools.packages.find]
+include = ["mjolnur*"]
