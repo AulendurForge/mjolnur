@@ -9,7 +9,7 @@ import jax
 import haiku as hk
 from google.cloud import storage
 from datetime import datetime
-from mjolnur.utils.graphcast_utils_example import (
+from mjolnur.utils.graphcast_utils import (
     get_graphcast_model_and_params,
     load_era5_data_for_graphcast,
 )  # Assuming you have a function like this
