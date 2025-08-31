@@ -1,0 +1,16 @@
+# In: mjolnur/config/data_cache_config.yaml
+
+# Defines the time period for which we will pre-compute GraphCast outputs.
+times:
+  start: "2023-01-01T00:00:00"
+  stop: "2023-01-31T18:00:00" # A month of data to start
+  step_hours: 6
+
+# GraphCast model settings
+graphcast:
+  model_name: "GraphCast_small" # Or whichever you are using
+
+# Output storage settings
+output:
+  # This Zarr will contain both decoded variables and latent vectors
+  zarr_path: "gs://mjolnur-data/graphcast_cache/v1.zarr"
