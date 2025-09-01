@@ -562,11 +562,6 @@ ZARR_URI = f"gs://{BUCKET}/cams/zarr/pm_1deg_conservative.zarr"
 print("Initializing CAMS Zarr Viewer...")
 print(f"Connecting to: {ZARR_URI}")
 
-from google.colab import auth
-
-auth.authenticate_user()
-
-fs = gcsfs.GCSFileSystem(token="google_default")
 store = fs.get_mapper(ZARR_URI)
 
 # Load the dataset
